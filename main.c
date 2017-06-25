@@ -26,6 +26,7 @@ programmer_t pgms[] = {
 	{ 	"stlink",
 		0x0483, // USB vid
 		0x3744, // USB pid
+		1,
 		stlink_open,
 		stlink_close,
 		stlink_swim_srst,
@@ -36,6 +37,7 @@ programmer_t pgms[] = {
 		"stlinkv2", 
 		0x0483,
 		0x3748,
+		1,
 		stlink2_open,
 		stlink_close,
 		stlink2_srst,
@@ -47,12 +49,13 @@ programmer_t pgms[] = {
 
 void print_help_and_exit(const char *name, bool err) {
 	FILE *stream = err ? stderr : stdout;
-	fprintf(stream, "Usage: %s [-c programmer] [-p partno] [-s memtype] [-b bytes] [-r|-w|-v] <filename>\n", name);
+	fprintf(stream, "Usage: %s [-c programmer] [-p partno] [-n] [-s memtype] [-b bytes] [-r|-w|-v] <filename>\n", name);
 	fprintf(stream, "Options:\n");
 	fprintf(stream, "\t-?             Display this help\n");
 	fprintf(stream, "\t-c programmer  Specify programmer used (stlink or stlinkv2)\n");
 	fprintf(stream, "\t-p partno      Specify STM8 device\n");
 	fprintf(stream, "\t-l             List supported STM8 devices\n");
+	fprintf(stream, "\t-n             Dont send a reset signal\n");
 	fprintf(stream, "\t-s memtype     Specify memory type (flash, eeprom, ram, opt or explicit address)\n");
 	fprintf(stream, "\t-b bytes       Specify number of bytes\n");
 	fprintf(stream, "\t-r <filename>  Read data from device to file\n");
@@ -136,10 +139,13 @@ int main(int argc, char **argv) {
 	// Parsing command line
 	char c;
 	action_t action = NONE;
-	bool start_addr_specified = false,
-		pgm_specified = false,
-		part_specified = false,
-        bytes_count_specified = false;
+	unsigned char reset_strobe = 1;
+
+	bool	start_addr_specified = false,
+			pgm_specified = false,
+			part_specified = false,
+			bytes_count_specified = false;
+
 	memtype_t memtype = FLASH;
 	int i;
 	programmer_t *pgm = NULL;
@@ -162,6 +168,9 @@ int main(int argc, char **argv) {
 					printf("%s ", stm8_devices[i].name);
 				printf("\n");
 				exit(0);
+			case 'n':
+			reset_strobe = 0;
+				break;
 			case 'r':
 				action = READ;
 				strcpy(filename, optarg);
@@ -245,6 +254,7 @@ int main(int argc, char **argv) {
 		// specified part and memtype
 		switch(memtype) {
 			case RAM:
+				pgm->reset_strobe = reset_strobe;
                 if(!start_addr_specified) {
                     start = part->ram_start;
                 }
@@ -254,6 +264,7 @@ int main(int argc, char **argv) {
                 fprintf(stderr, "Determine RAM area\r\n");
 				break;
 			case EEPROM:
+				pgm->reset_strobe = reset_strobe;
                 if(!start_addr_specified) {
                     start = part->eeprom_start;
                 }
@@ -263,6 +274,7 @@ int main(int argc, char **argv) {
                 fprintf(stderr, "Determine EEPROM area\r\n");
 				break;
 			case FLASH:
+				pgm->reset_strobe = 1;
                 if(!start_addr_specified) {
                     start = part->flash_start;
                 }
@@ -272,6 +284,7 @@ int main(int argc, char **argv) {
                 fprintf(stderr, "Determine FLASH area\r\n");
 				break;
 			case OPT:
+				pgm->reset_strobe = 1;
                 if(!start_addr_specified) {
                     start = 0x4800;
                 }
@@ -284,6 +297,7 @@ int main(int argc, char **argv) {
 		}
 		start_addr_specified = true;
 	}
+
 	if(!action)
 		spawn_error("No action has been specified");
 	if(!start_addr_specified)

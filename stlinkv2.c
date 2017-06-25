@@ -108,7 +108,7 @@ void stlink2_init_session(programmer_t *pgm) {
 				0x07,
 				0x04,
 				0x03,
-				0x05,
+//				0x05
 				};
 	for(i = 0; i < sizeof(f4_cmd_arg1); i++) {
 		stlink2_cmd(pgm, 0xf400 | f4_cmd_arg1[i], 0);
@@ -116,21 +116,34 @@ void stlink2_init_session(programmer_t *pgm) {
 	}
 
 	stlink2_write_byte(pgm, 0xa0, 0x7f80); // mov 0x0a, SWIM_CSR2 ;; Init SWIM
+	if(pgm->reset_strobe){
+		stlink2_cmd(pgm, 0xf405, 0); //trigger reset
+		TRY(8, stlink2_get_status(pgm) == 0);
+	}
 	stlink2_cmd(pgm, 0xf408, 0);
 	TRY(8, stlink2_get_status(pgm) == 0);
 
-	stlink2_write_and_read_byte(pgm, 0xa0, 0x7f99);
+	stlink2_write_and_read_byte(pgm, 0xa8, 0x7f99);
 	stlink2_cmd(pgm, 0xf40c, 0);
 	msg_recv_int8(pgm); // 0x08 (or 0x0a if used stlink2_write_byte() instead)
+
 }
 
 void stlink2_finish_session(programmer_t *pgm) {
-	stlink2_cmd(pgm, 0xf405, 0);
-	stlink2_get_status(pgm);
+
+	if(pgm->reset_strobe){
+		stlink2_cmd(pgm, 0xf405, 0); //trigger reset
+		stlink2_get_status(pgm);
+	}
 	stlink2_cmd(pgm, 0xf407, 0);
 	stlink2_get_status(pgm);
+	//reset register values
+	stlink2_write_byte(pgm, 0x00, 0x7f80);
+	stlink2_write_byte(pgm, 0x00, 0x7f99);
+	stlink2_write_byte(pgm, 0x10, 0x7f98);
 	stlink2_cmd(pgm, 0xf403, 0);
 	stlink2_get_status(pgm);
+
 }
 
 int stlink2_write_byte(programmer_t *pgm, unsigned char byte, unsigned int start) {
@@ -200,6 +213,7 @@ int stlink2_swim_read_range(programmer_t *pgm, const stm8_device_t *device, unsi
 		stlink2_cmd(pgm, 0xf40c, 0);
 		msg_recv(pgm, &(buffer[i]), block_size);
 	}
+
 
 	stlink2_finish_session(pgm);
 
@@ -279,8 +293,7 @@ int stlink2_swim_write_range(programmer_t *pgm, const stm8_device_t *device, uns
     if(memtype == FLASH || memtype == EEPROM || memtype == OPT) {
         stlink2_write_and_read_byte(pgm, 0x56, device->regs.FLASH_IAPSR); // mov 0x56, FLASH_IAPSR
     }
-	stlink2_write_byte(pgm, 0x00, 0x7f80);
-	stlink2_write_byte(pgm, 0xb6, 0x7f80);
+
 	stlink2_finish_session(pgm);
 	return(length);
 }

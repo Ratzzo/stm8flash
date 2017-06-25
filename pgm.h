@@ -31,6 +31,7 @@ typedef struct programmer_s {
 	const char *name;
 	unsigned int usb_vid;
 	unsigned int usb_pid;
+	unsigned char reset_strobe;
 
 	/* Methods */
 	bool (*open) (struct programmer_s *pgm);
@@ -38,6 +39,7 @@ typedef struct programmer_s {
 	void (*reset) (struct programmer_s *pgm);
 	int (*read_range) (struct programmer_s *pgm, const stm8_device_t *device, unsigned char *buffer, unsigned int start, unsigned int length);
 	int (*write_range) (struct programmer_s *pgm, const stm8_device_t *device, unsigned char *buffer, unsigned int start, unsigned int length, const memtype_t memtype);
+
 
 	/* Private */
 	libusb_device_handle *dev_handle;

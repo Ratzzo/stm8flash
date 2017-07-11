@@ -26,7 +26,8 @@ programmer_t pgms[] = {
 	{ 	"stlink",
 		0x0483, // USB vid
 		0x3744, // USB pid
-		1,
+		1, //reset strobe
+		UNKNOWN, //memtype
 		stlink_open,
 		stlink_close,
 		stlink_swim_srst,
@@ -37,7 +38,8 @@ programmer_t pgms[] = {
 		"stlinkv2", 
 		0x0483,
 		0x3748,
-		1,
+		1, //reset strobe
+		UNKNOWN, //memtype
 		stlink2_open,
 		stlink_close,
 		stlink2_srst,
@@ -168,6 +170,7 @@ int main(int argc, char **argv) {
 					printf("%s ", stm8_devices[i].name);
 				printf("\n");
 				exit(0);
+				break;
 			case 'n':
 			reset_strobe = 0;
 				break;
@@ -249,6 +252,8 @@ int main(int argc, char **argv) {
         }
     }
 
+	pgm->memtype = memtype;
+
 	if(memtype != UNKNOWN) {
 		// Selecting start addr depending on 
 		// specified part and memtype
@@ -264,7 +269,7 @@ int main(int argc, char **argv) {
                 fprintf(stderr, "Determine RAM area\r\n");
 				break;
 			case EEPROM:
-				pgm->reset_strobe = reset_strobe;
+				pgm->reset_strobe = 1;
                 if(!start_addr_specified) {
                     start = part->eeprom_start;
                 }

@@ -135,14 +135,17 @@ void stlink2_finish_session(programmer_t *pgm) {
 		stlink2_cmd(pgm, 0xf405, 0); //trigger reset
 		stlink2_get_status(pgm);
 	}
-	stlink2_cmd(pgm, 0xf407, 0);
-	stlink2_get_status(pgm);
+	if(pgm->memtype != EEPROM){
+		stlink2_cmd(pgm, 0xf407, 0);
+		stlink2_get_status(pgm);
+	}
 	//reset register values
 	stlink2_write_byte(pgm, 0x00, 0x7f80);
 	stlink2_write_byte(pgm, 0x00, 0x7f99);
 	stlink2_write_byte(pgm, 0x10, 0x7f98);
 	stlink2_cmd(pgm, 0xf403, 0);
 	stlink2_get_status(pgm);
+
 
 }
 
@@ -238,8 +241,8 @@ int stlink2_swim_write_range(programmer_t *pgm, const stm8_device_t *device, uns
         stlink2_write_byte(pgm, 0xae, device->regs.FLASH_PUKR); 
     }
     if(memtype == EEPROM || memtype == OPT) {
-        stlink2_write_byte(pgm, 0xae, device->regs.FLASH_DUKR);
-        stlink2_write_byte(pgm, 0x56, device->regs.FLASH_DUKR);
+		stlink2_write_byte(pgm, 0xae, device->regs.FLASH_DUKR);
+		stlink2_write_byte(pgm, 0x56, device->regs.FLASH_DUKR);
     }
 
     if(memtype == FLASH || memtype == EEPROM || memtype == OPT) {
@@ -294,6 +297,8 @@ int stlink2_swim_write_range(programmer_t *pgm, const stm8_device_t *device, uns
         stlink2_write_and_read_byte(pgm, 0x56, device->regs.FLASH_IAPSR); // mov 0x56, FLASH_IAPSR
     }
 
+	stlink2_write_byte(pgm, 0x00, 0x7f80);
+	stlink2_write_byte(pgm, 0xb6, 0x7f99);
 	stlink2_finish_session(pgm);
 	return(length);
 }

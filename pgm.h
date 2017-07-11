@@ -32,6 +32,7 @@ typedef struct programmer_s {
 	unsigned int usb_vid;
 	unsigned int usb_pid;
 	unsigned char reset_strobe;
+	memtype_t memtype;
 
 	/* Methods */
 	bool (*open) (struct programmer_s *pgm);

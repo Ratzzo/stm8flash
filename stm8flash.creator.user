@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 4.3.0, 2017-07-11T01:12:15. -->
+<!-- Written by QtCreator 4.4.1, 2017-11-02T14:09:29. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -71,7 +71,7 @@
      <valuemap type="QVariantMap" key="ProjectExplorer.BuildStepList.Step.0">
       <valuelist type="QVariantList" key="GenericProjectManager.GenericMakeStep.BuildTargets"/>
       <value type="bool" key="GenericProjectManager.GenericMakeStep.Clean">false</value>
-      <value type="QString" key="GenericProjectManager.GenericMakeStep.MakeArguments">clean &amp;&amp; make -j4 &amp;&amp; make install &amp;&amp; make -C /home/ratzzo/embedded/stm8/595_spi dumpeeprom</value>
+      <value type="QString" key="GenericProjectManager.GenericMakeStep.MakeArguments">clean &amp;&amp; make -j4 &amp;&amp; make install &amp;&amp; timeout 0.3 stm8flash -cstlinkv2 -pstm8s103p3 -n -sram -r ram.bin</value>
       <value type="QString" key="GenericProjectManager.GenericMakeStep.MakeCommand"></value>
       <value type="bool" key="ProjectExplorer.BuildStep.Enabled">true</value>
       <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Make</value>

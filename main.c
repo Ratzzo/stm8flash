@@ -46,6 +46,18 @@ programmer_t pgms[] = {
 		stlink2_swim_read_range,
 		stlink2_swim_write_range,
 	},
+	{
+		"debug",
+		0x0483,
+		0x3749,
+		1, //reset strobe
+		UNKNOWN, //memtype
+		stlink2_open,
+		stlink_close,
+		stlink2_srst,
+		stlink2_swim_read_range,
+		stlink2_swim_write_range,
+	},
 	{ NULL },
 };
 
@@ -303,6 +315,7 @@ int main(int argc, char **argv) {
 		start_addr_specified = true;
 	}
 
+
 	if(!action)
 		spawn_error("No action has been specified");
 	if(!start_addr_specified)
@@ -313,8 +326,11 @@ int main(int argc, char **argv) {
 		print_help_and_exit(argv[0], true);
 	if(!usb_init(pgm, pgm->usb_vid, pgm->usb_pid))
 		spawn_error("Couldn't initialize stlink");
+
+
 	if(!pgm->open(pgm))
 		spawn_error("Error communicating with MCU. Please check your SWIM connection.");
+
 	FILE *f;
 	if(action == READ) {
 		fprintf(stderr, "Reading %d bytes at 0x%x... ", bytes_count, start);

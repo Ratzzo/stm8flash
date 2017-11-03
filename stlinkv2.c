@@ -135,7 +135,7 @@ void stlink2_finish_session(programmer_t *pgm) {
 		stlink2_cmd(pgm, 0xf405, 0); //trigger reset
 		stlink2_get_status(pgm);
 	}
-	if(pgm->memtype != EEPROM){
+	if(pgm->memtype != EEPROM && pgm->memtype != RAM){
 		stlink2_cmd(pgm, 0xf407, 0);
 		stlink2_get_status(pgm);
 	}
